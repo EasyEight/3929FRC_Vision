@@ -22,9 +22,9 @@ public class Work extends JPanel
 	  System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
       JFrame frame = new JFrame();
       
-	  VideoCapture cap = new VideoCapture("http://root:root@10.39.29.67/axis-cgi/mjpg/video.cgi?date=1&clock=1&resolution=320x240");
-      //VideoCapture cap = new VideoCapture();
-      //cap.open(0);
+	  //VideoCapture cap = new VideoCapture("http://root:root@10.39.29.67/axis-cgi/mjpg/video.cgi?date=1&clock=1&resolution=320x240");
+      VideoCapture cap = new VideoCapture();
+      cap.open(0);
 	  //cap.open(0);//?dummy=video.mjpg");"10.39.29.67:3218/view/viewer_index.shtml?id=108"
 	  //cap.open("http://10.39.29.67/view/viewer_index.shtml?id=0");
 	  Mat raw = new Mat();
@@ -57,13 +57,16 @@ public class Work extends JPanel
 	      Imgproc.Canny(mask, edge, .5f, 1f);
 	      Imgproc.findContours(edge, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 	      
-	      if(contours.size() > 5){
+	      if(contours.size() > 1){
 	    	  int w = 0;
 	    	  double max = 0;
 	    	  for(int x = 0; x < contours.size() - 1; x++){
 	    		 if(Imgproc.contourArea(contours.get(x)) > max){
 	    			 max = Imgproc.contourArea(contours.get(x));
 	    			 contour1 = contours.get(x);
+	    			 double [] pt = contour1.get(0, 0);
+	    			 int rows = contour1.rows();
+	    			 int cols = contour1.cols();
 	    			 w = x;
 	    		 }
 	    	  }
@@ -75,6 +78,7 @@ public class Work extends JPanel
 	    			 contour2 = contours.get(x);
 	    		 }
 	    	  }
+
 	    	  
 	    	  area1 = Imgproc.contourArea(contour1);
 	    	  area2 = Imgproc.contourArea(contour2);
@@ -85,12 +89,31 @@ public class Work extends JPanel
 	    	  else if(area2 > area1 && area1 * 1.5 > area2 && area1 + area2 > 100){
 	    		  found = true;
 	    	  }
+	    	  
 	    	  if(found){
 	    		  //find extremas from area1 and area2
 	    		  
-	    		  int extrema1L = 0; int extrema1R = 0;
-	    		  int extrema2L = 0; int extrema2R = 0;
+	    		  int extrema1L = (int) contour1.get(0, 0)[0]; int extrema1R = (int) contour1.get(0, 0)[0];
+	    		  int extrema2L = (int) contour2.get(0, 0)[0]; int extrema2R = (int) contour2.get(0, 0)[0];
 	    		  
+	    		  for(int x = 1; x < contour1.rows() - 1; x ++){
+	    			  if(contour1.get(x, 0)[0] < extrema1L){
+		    			  extrema1L = (int) contour1.get(x, 0)[0];
+	    			  }
+	    			  else if(contour1.get(x, 0)[0] > extrema1R){
+		    			  extrema1R = (int) contour1.get(x, 0)[0];
+	    			  }
+	    		  }
+	    		  
+	    		  for(int x = 1; x < contour2.rows() - 1; x ++){
+	    			  if(contour2.get(x, 0)[0] < extrema2L){
+		    			  extrema2L = (int) contour2.get(x, 0)[0];
+	    			  }
+	    			  else if(contour2.get(x, 0)[0] > extrema2R){
+		    			  extrema2R = (int) contour2.get(x, 0)[0];
+	    			  }
+	    		  }
+
 	    		  int extremaLeft;
 	    		  int extremaRight;
 
